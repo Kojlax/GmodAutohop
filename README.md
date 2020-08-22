@@ -18,5 +18,6 @@ Causes +bhop to act exactly like a standard +jump input. +bhop sends +jump, -bho
 
 Causes +bhop to send a +jump input only if
 
-The player is both on the ground AND has not jumped the previous frame,
+The player is both on the ground AND has not jumped the previous frame
+
 OR this is the first frame +bhop has been held.
