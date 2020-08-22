@@ -1,32 +1,39 @@
 CreateClientConVar("cl_autojump", "1", true, false)
-
+ 
 --Flag used to check if LocalPlayer has jumped on the previous game tick
 HasJumped = false
-
+ 
+--Flag used to check whether this is the first frame of jump being held
+--This is my hacky fix to make sure players can dismount from ladders
+--because IsUsingLadder() only applies to bots for some fucking reason
+--I hate glua so goddamn much
+FirstJumpFrame = true
+ 
 --adds +bhop command, and defines the function it will call
 concommand.Add("+bhop", function()
     --calls a hook that fires every game tick
     hook.Add("Tick", "Bhop Hook", function()
-
+ 
         if GetConVarNumber("cl_autojump") == 1 then
             
             --checks whether the player jumped on the previous game tick
             --This check prevents +jump being held during two consecutive game ticks, preventing input
-
-            if HasJumped == false then
-
+ 
+            if (HasJumped == false) then
+ 
                 --check whether conditions are right to jump
-                if LocalPlayer():IsOnGround() or (LocalPlayer():WaterLevel() > 0) then
+                if LocalPlayer():IsOnGround() or (LocalPlayer():WaterLevel() > 0) or (FirstJumpFrame == true) then
                     RunConsoleCommand("+jump")
+                    FirstJumpFrame = false
                     HasJumped = true
-
+ 
                 --I got a little bit excessive with the -jumps and the HasJumped = falses
                 --but it fixed the bug I was having, so I am not going to change it
                 else 
                     RunConsoleCommand("-jump")
                     HasJumped = false
                 end
-
+ 
             else
                 RunConsoleCommand("-jump")
                 HasJumped = false
@@ -36,14 +43,15 @@ concommand.Add("+bhop", function()
         end
     end)
 end)
-
+ 
 --adds the -bhop command, called when the +bhop bind is released
 concommand.Add("-bhop", function()
     HasJumped = false
     RunConsoleCommand("-jump")
     hook.Remove("Tick", "Bhop Hook") 
+    FirstJumpFrame = true
 end)
-
+ 
 --added for personal convenience
 concommand.Add("bhop_toggle", function()
     if GetConVarNumber("cl_autojump") == 0 then
